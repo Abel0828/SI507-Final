@@ -1,3 +1,3 @@
 db_name = 'postgres'
-db_user = ''
-db_password = ''
+db_user = 'postgres'
+db_password = '5237152371'

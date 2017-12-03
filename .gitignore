@@ -1,3 +1,6 @@
 memo.txt
 test.py
 cache_websites.json
+db_config.json
+.idea
+__pycache__/*

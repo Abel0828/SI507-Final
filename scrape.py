@@ -46,8 +46,9 @@ def scrape():
         soup=get_soup(url)
         unvs_tags=soup.find_all('li',id=re.compile(r'^view-.*'),class_='block-normal block-loose-for-large-up')
         for unvs_tag in unvs_tags:
-            print('hi')
-            unvss.append(Unvs(unvs_tag))
+            u=Unvs(unvs_tag)
+            print("Collect info of {}".format(u.name))
+            unvss.append(u)
     return unvss
 
 class Unvs(object):
@@ -119,22 +120,21 @@ class Unvs(object):
         self.setting=info_tags[4].string.strip()
         self.endowment=info_tags[5].string.strip()
 
-    def DB_setup():
-        print("Start with existing db: postgres...")
+def DB_setup():
+        print("Start with existing database: postgres...")
         try:
             con= psycopg2.connect("dbname='{0}' user='{1}' password='{2}'".format(db_name, db_user, db_password))
-        else:
+        except:
             print('Cannot establish connection, please recheck username and password.')
             sys.exit()
-        print("Connection established.")
-        
+        print("Connection established.")        
         con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        cur=db.cursor()
-        print("Create new database: si507_final_ywangdr ...")
+        cur=con.cursor()
+        print("Create new database: si507_final_ywangdr, which might take a little time...")
         cur.execute("CREATE DATABASE si507_final_ywangdr;")
 
         cur.close()
-        con=psycopg2.connect("dbname=si507_final_ywangdr user='{}'".format(db_user))
+        con=psycopg2.connect("dbname=si507_final_ywangdr user='{}' password={}".format(db_user,db_password))
         return con
     
 def create_tables(con,cur):
@@ -143,34 +143,35 @@ def create_tables(con,cur):
     name VARCHAR UNIQUE,
     rank INTEGER,
     web_url VARCHAR,
-    PRIMARY KEY (name);"""
+    PRIMARY KEY (name));"""
     )
     con.commit()
     cur.execute("""
     CREATE TABLE IF NOT EXISTS university_detail(
     name VARCHAR UNIQUE,
     address VARCHAR,
-    year_founded INTERGER,
+    year_founded INTEGER,
     photos_url VARCHAR,
     n_undergraduate INTEGER,
     school_type VARCHAR,
     setting VARCHAR,
     endowment_amount VARCHAR,
-    FOREIGN KEY (name) REFERENCES university_basic (name)
+    FOREIGN KEY (name) REFERENCES university_basic (name),
     PRIMARY KEY (name));"""
     )
     con.commit()
     
-)
 
-def insert_data(unvss):
+
+def insert_data(con,cur,unvss):
     for unvs in unvss:
         basic_tup=(unvs.name,unvs.rank,unvs.page_url)
-        cur.execute("""INSERT INTO university_basic (name,rank,web_url) VALUES (%s,%s,%s,%s,%s)""",basic_tup)
+        cur.execute("""INSERT INTO university_basic (name,rank,web_url) VALUES (%s,%s,%s);""",basic_tup)
         con.commit()
         detail_tup=(unvs.name,unvs.address,unvs.year_founded,unvs.thumbnail,unvs.n_ug,unvs.type,unvs.setting,unvs.endowment)
-        cur.execute("""INSERT INTO university_detail (name,address,year_founded,photos_url,n_undergraduate,school_type,setting,endowment_amount) VALUES (%s,%s,%s,%s,%s)""",detail_tup)
-        con.commit()        
+        cur.execute("""INSERT INTO university_detail (name,address,year_founded,photos_url,n_undergraduate,school_type,setting,endowment_amount) VALUES (%s,%s,%s,%s,%s,%s,%s,%s);""",detail_tup)
+        con.commit()
+    print("finish insertion.")
     
 def database_store(unvss):        
     con=DB_setup()
