@@ -3,6 +3,12 @@ import requests
 import json
 import re
 import os
+import psycopg2
+import psycopg2.extras
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+from db_config import *
+import sys
+
 
 N_PAGE=1
 CACHE= 'cache_websites.json'
@@ -27,7 +33,7 @@ def get_soup(url):
     return soup
     
 
-def scrape_start():
+def scrape():
     """
     start point of scraping
     use urls, pass soup tag to Unvs
@@ -74,9 +80,12 @@ class Unvs(object):
         print(self.setting)
         print(self.endowment)
         """
+
+    def __repr__(self):
+        return '{} in {}, ranking #'.format(self.name,self.address,self.rank)
         
-        
-    
+    def __contains__(self,string):
+        return string in self.name
         
     def scrape_overview(self,unvs_tag):
         """
@@ -109,8 +118,66 @@ class Unvs(object):
         self.year_founded=int(info_tags[1].string.strip())
         self.setting=info_tags[4].string.strip()
         self.endowment=info_tags[5].string.strip()
-        
 
-if __name__=='__main__':
+    def DB_setup():
+        print("Start with existing db: postgres...")
+        try:
+            con= psycopg2.connect("dbname='{0}' user='{1}' password='{2}'".format(db_name, db_user, db_password))
+        else:
+            print('Cannot establish connection, please recheck username and password.')
+            sys.exit()
+        print("Connection established.")
+        
+        con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        cur=db.cursor()
+        print("Create new database: si507_final_ywangdr ...")
+        cur.execute("CREATE DATABASE si507_final_ywangdr;")
+
+        cur.close()
+        con=psycopg2.connect("dbname=si507_final_ywangdr user='{}'".format(db_user))
+        return con
     
-    scrape_start()
+def create_tables(con,cur):
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS university_basic(
+    name VARCHAR UNIQUE,
+    rank INTEGER,
+    web_url VARCHAR,
+    PRIMARY KEY (name);"""
+    )
+    con.commit()
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS university_detail(
+    name VARCHAR UNIQUE,
+    address VARCHAR,
+    year_founded INTERGER,
+    photos_url VARCHAR,
+    n_undergraduate INTEGER,
+    school_type VARCHAR,
+    setting VARCHAR,
+    endowment_amount VARCHAR,
+    FOREIGN KEY (name) REFERENCES university_basic (name)
+    PRIMARY KEY (name));"""
+    )
+    con.commit()
+    
+)
+
+def insert_data(unvss):
+    for unvs in unvss:
+        basic_tup=(unvs.name,unvs.rank,unvs.page_url)
+        cur.execute("""INSERT INTO university_basic (name,rank,web_url) VALUES (%s,%s,%s,%s,%s)""",basic_tup)
+        con.commit()
+        detail_tup=(unvs.name,unvs.address,unvs.year_founded,unvs.thumbnail,unvs.n_ug,unvs.type,unvs.setting,unvs.endowment)
+        cur.execute("""INSERT INTO university_detail (name,address,year_founded,photos_url,n_undergraduate,school_type,setting,endowment_amount) VALUES (%s,%s,%s,%s,%s)""",detail_tup)
+        con.commit()        
+    
+def database_store(unvss):        
+    con=DB_setup()
+    cur=con.cursor()
+    create_tables(con,cur)
+    insert_data(con,cur,unvss)
+    
+if __name__=='__main__':
+    unvss=scrape()
+    database_store(unvss)
