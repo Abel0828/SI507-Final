@@ -1,7 +1,7 @@
 memo.txt
 test.py
 cache_websites.json
-config.json
+config.py
 .idea
 __pycache__/*
 universities.csv
