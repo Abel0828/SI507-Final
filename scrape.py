@@ -3,14 +3,16 @@ import requests
 import json
 import re
 import os
-import psycopg2
+
+import psycopg2
 import psycopg2.extras
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from db_config import *
+from config import *
 import sys
+from plot import *
 
-
-N_PAGE=1
+zips=[]
+N_PAGE=10
 CACHE= 'cache_websites.json'
 if not os.path.exists('./cache_websites.json'):
     with open(CACHE,'w') as c:
@@ -32,7 +34,21 @@ def get_soup(url):
         soup=BeautifulSoup(text,'html.parser')
     return soup
     
-
+def get_coordinate(url):
+    f=open(CACHE,'r',encoding='utf-8')
+    text=f.read()
+    f.close()
+    cache_dict=json.loads(text)
+    coordinate=None
+    if url in cache_dict:
+        coordinate=cache_dict[url]
+    else:
+        coord_dict=json.loads(requests.get(url).text).get('results')[0]['geometry']['location']
+        coordinate=(coord_dict['lat'],coord_dict['lng'])
+        cache_dict[url]=coordinate
+        with open(CACHE,'w',encoding='utf-8') as nf:
+            nf.write(json.dumps(cache_dict))
+    return coordinate[0],coordinate[1]
 def scrape():
     """
     start point of scraping
@@ -60,27 +76,20 @@ class Unvs(object):
         self.n_ug=None
         self.page_url=None
         
+        self.zip=None
         self.type=None
         self.year_founded=None
         self.setting=None
         self.endowment=None
 
+        self.lat=None
+        self.lng=None
+
         self.scrape_overview(unvs_tag)
         assert(self.page_url!=None)
         self.scrape_detail(self.page_url)
+        self.get_location()
         
-        """
-        print(self.name)
-        print(self.rank)
-        print(self.address)
-        print(self.thumbnail)
-        print(self.n_ug)
-        print(self.page_url)
-        print(self.type)
-        print(self.year_founded)
-        print(self.setting)
-        print(self.endowment)
-        """
 
     def __repr__(self):
         return '{} in {}, ranking #'.format(self.name,self.address,self.rank)
@@ -107,18 +116,29 @@ class Unvs(object):
         self.rank=int(match.group())
         self.n_ug=int(unvs_tag.find('span',string=re.compile(r'\s*Undergraduate Enrollment\s*'))\
                       .parent.strong.string.strip().replace(',',''))
-        self.thumbnail=base+unvs_tag.find('a',class_='display-block right').get('href')
+        tn_tag=unvs_tag.find('a',class_='display-block right')
+        if tn_tag:
+            self.thumbnail=base+unvs_tag.find('a',class_='display-block right').get('href')
         
     def scrape_detail(self,url):
         """
         use the url to scrape detailed info
         """
         soup=get_soup(url)
+        self.zip=soup.find('p',class_='block-normal hide-for-small-only text-small hero-ranking-data-contact').stripped_strings.__next__()[-5::1]
+        zips.append(self.zip)
         info_tags=soup.find_all('span',class_='heading-small text-black text-tight block-flush display-block-for-large-up')
         self.type=info_tags[0].string.strip()
         self.year_founded=int(info_tags[1].string.strip())
         self.setting=info_tags[4].string.strip()
         self.endowment=info_tags[5].string.strip()
+
+    def get_location(self):
+        url_base='https://maps.googleapis.com/maps/api/geocode/json?&address='
+        url=url_base+','.join([self.name]+self.address.split(','))+"&key={}".format(geo_api_key)
+        self.lat, self.lng=get_coordinate(url)
+        print(self.lat,', ',self.lng)
+        
 
 def DB_setup():
         print("Start with existing database: postgres...")
@@ -130,7 +150,7 @@ def DB_setup():
         print("Connection established.")        
         con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         cur=con.cursor()
-        print("Create new database: si507_final_ywangdr, which might take a little time...")
+        print("Create new database: si507_final_ywangdr, which might take a while...")
         cur.execute("CREATE DATABASE si507_final_ywangdr;")
 
         cur.close()
@@ -172,6 +192,7 @@ def insert_data(con,cur,unvss):
         cur.execute("""INSERT INTO university_detail (name,address,year_founded,photos_url,n_undergraduate,school_type,setting,endowment_amount) VALUES (%s,%s,%s,%s,%s,%s,%s,%s);""",detail_tup)
         con.commit()
     print("finish insertion.")
+
     
 def database_store(unvss):        
     con=DB_setup()
@@ -180,5 +201,7 @@ def database_store(unvss):
     insert_data(con,cur,unvss)
     
 if __name__=='__main__':
-    unvss=scrape()
-    database_store(unvss)
+    unvss=scrape() # scrape website + get location with google map api
+    database_store(unvss) #  store the result (except loaction) into database
+    visualize(unvss)
+    
