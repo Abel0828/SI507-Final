@@ -1,6 +1,8 @@
 memo.txt
 test.py
 cache_websites.json
-db_config.json
+config.json
 .idea
 __pycache__/*
+universities.csv
+
