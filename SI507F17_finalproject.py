@@ -12,7 +12,6 @@ import sys
 from plot import *
 
 zips=[]
-N_PAGE=1
 CACHE= 'cache_websites.json'
 if not os.path.exists('./cache_websites.json'):
     with open(CACHE,'w') as c:
@@ -49,7 +48,7 @@ def get_coordinate(url):
         with open(CACHE,'w',encoding='utf-8') as nf:
             nf.write(json.dumps(cache_dict))
     return coordinate[0],coordinate[1]
-def scrape():
+def scrape(N_PAGE):
     """
     start point of scraping
     use urls, pass soup tag to Unvs
@@ -201,7 +200,8 @@ def database_store(unvss):
     insert_data(con,cur,unvss)
     
 if __name__=='__main__':
-    unvss=scrape() # scrape website + get location with google map api
+    NPAGE=10
+    unvss=scrape(N_PAGE) # scrape website + get location with google map api
     database_store(unvss) #  store the result (except loaction) into database
     visualize(unvss)
     
