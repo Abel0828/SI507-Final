@@ -23,3 +23,4 @@ Later the program will first connect to this database, and then create a new dat
 *9. Now you could start running SI507F17_finalproject.py
 *10. similar to 7, type in: python /path/to/SI507F17_finalproject_tests.py
 *11. the code may run for a while (maybe a minute or two, or even longer). After it finishes, your web browser should be opened and you should be directed to a webpage on which shows the final visualization of the 100 unversities on map, move your mouse over the dots and you should be able to see the metadata of a unversity
+
