@@ -1,6 +1,11 @@
 memo.txt
+
 test.py
-cache_websites.json.idea
+
+cache_websites.json
+.idea
+
 __pycache__/*
+
 universities.csv
 
