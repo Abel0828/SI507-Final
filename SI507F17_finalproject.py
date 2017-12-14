@@ -12,7 +12,7 @@ import sys
 from plot import *
 
 zips=[]
-N_PAGE=10
+N_PAGE=1
 CACHE= 'cache_websites.json'
 if not os.path.exists('./cache_websites.json'):
     with open(CACHE,'w') as c:
@@ -137,7 +137,7 @@ class Unvs(object):
         url_base='https://maps.googleapis.com/maps/api/geocode/json?&address='
         url=url_base+','.join([self.name]+self.address.split(','))+"&key={}".format(geo_api_key)
         self.lat, self.lng=get_coordinate(url)
-        print(self.lat,', ',self.lng)
+        #print(self.lat,', ',self.lng)
         
 
 def DB_setup():
