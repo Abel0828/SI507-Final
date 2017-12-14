@@ -200,7 +200,7 @@ def database_store(unvss):
     insert_data(con,cur,unvss)
     
 if __name__=='__main__':
-    NPAGE=10
+    N_PAGE=10
     unvss=scrape(N_PAGE) # scrape website + get location with google map api
     database_store(unvss) #  store the result (except loaction) into database
     visualize(unvss)
