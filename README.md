@@ -9,11 +9,11 @@ This final project aims to collect unversity rankings (top-100 national unversit
 ## Part2: Steps to run the code:
 
 NOTE: this project uses python3.5, but any python3 verion should be fines.
-* 1. Clone the repo into a local directory. You should be able to see requirements.txt in that repo, which would be used later in 3.
+* 1. Clone the repo into a local directory, put config.py(submitted through Canvas) into the repo. You should be able to see requirements.txt in that repo, which would be used later in 3.
 * 2. Create a virtual environment (could be anywhere)
 * 3. Install the virtual environment dependancies: pip install requirements.txt
 * 4. Activate the virtual environment, and navigate to the repo
-* 5. All the credentials are stored in config.py, however, most of the keys are already filled for you, 
+* 5. All the credentials are stored in config.py , however, most of the keys are already filled for you, 
 the only thing you need to do is that you need to make sure there exists a Postgres database on your lcal machine,
  and it should named exactly "postgres", with the user being "postgres" (usually this database was automatically created for you when you installed Postgres)
 Now you need to copy the corresponding password of the database to db_password variable in config.py
