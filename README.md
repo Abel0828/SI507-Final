@@ -25,7 +25,7 @@ Later the program will first connect to this database, and then create a new dat
 * 10. Similar to 7, type in: python /path/to/SI507F17_finalproject_tests.py
 * 11. The code may run for a while (maybe a minute or two, or even longer). After it finishes, your web browser should be opened and you should be directed to a webpage on which shows the final visualization of the 100 unversities on map, move your mouse over the dots and you should be able to see the metadata of a unversity
 * 12. There is also a final_outcome.png in the repo, which is the screenshot of the map visualization in 11
-* 13. In case you want to run SI507F17_finalproject.py, don't forget to check if there already exists a si507_final_ywangdr database in your Postgre server. If so, you would have to delete the old database in order to re-run the code. Otherwise, the code give an error saying that the database to be created already exists.
+* 13. In case you want to run SI507F17_finalproject.py a second time, don't forget to check if there already exists a si507_final_ywangdr database in your Postgre server. If so, you would have to delete the old database in order to re-run the code. Otherwise, the code give an error saying that the database to be created already exists.
 
 ## Part3: References
 * 1. US News Unversity Ranking: https://www.usnews.com/best-colleges/rankings/national-universities
