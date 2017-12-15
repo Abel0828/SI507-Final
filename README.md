@@ -18,7 +18,7 @@ the only thing you need to do is that you need to make sure there exists a Postg
  and it should named exactly "postgres", with the user being "postgres" (usually this database was automatically created for you when you installed Postgres)
 Now you need to copy the corresponding password of the database to db_password variable in config.py
 Later the program will first connect to this database, and then create a new database called si507_final_ywangdr, then connect to the new database to do operations
-* 6. (Do this if in step 5 you don't have a database called postgre. Otherwise skip this step)You need to create a database yourself, then update db_name, db_user and db_password in config.py
+* 6. (Do this if in step 5 you don't have a database called postgres. Otherwise skip this step)You need to create a database yourself, then update db_name, db_user and db_password in config.py
 * 7. Now things have been set up, you could start running SI507F17_finalproject_tests.py first to check if everything works fine. In your virtual environment, type in: python /path/to/SI507F17_finalproject_tests.py
 * 8. All 15 test cases should pass.
 * 9. Now you could start running SI507F17_finalproject.py
